@@ -1,0 +1,292 @@
+\documentclass[table]{beamer}
+\mode<presentation>
+\usetheme{default}
+\usepackage{multirow}
+
+%Use James Hutton Style for Beamer
+\input{hutton}
+
+\title[Writing Galaxy Tools]{Writing Galaxy Tools}
+\author[Cock \textit{et al.}]{\underline{Peter Cock}$^1$,
+Bj{\"o}rn Gr{\"u}ning$^2$,
+Greg Von Kuster$^3$
+}
+\institute{$^1$ James Hutton Institute, Scotland, UK;
+$^2$ Albert-Ludwigs-University, Germany;
+$^3$ Penn State University, USA}
+\date[30 June 2014]{30 June 2014, Galaxy Community Conference, Baltimore}
+%Maybe I should tweak the theme more, but hack the subtitle for date:
+\subtitle{30 June 2014, GCC2014, Baltimore}
+
+% Conference:
+%
+% https://wiki.galaxyproject.org/Events/GCC2014
+%
+% Training Data: Writing Tools
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+
+\begin{frame}
+\frametitle{Wrapping Command-line Tools}
+\begin{itemize}
+\item Tell Galaxy what options to show the user
+\item Galaxy tells your tool the selected input filenames
+\item Galaxy tells your tool the desired output filenames
+\item Must tell Galaxy how to invoke the underlying tool...
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Heart of each Galaxy tool is an XML file}
+Core elements:
+\begin{itemize}
+\item \texttt{<inputs>} -- parameters/options/files
+\item \texttt{<outputs>} -- output files expected
+\item \texttt{<command>} -- how to turn this into a command line string
+\end{itemize}
+Secondary elements:
+\begin{itemize}
+\item \texttt{<dependencues>} -- tell Galaxy how to find the binaries etc
+\item \texttt{<stdio>} -- what counts as an error?
+\item \texttt{<description>} -- subtitle describing tool
+\item \texttt{<help>} -- instructions to show the end user
+\item \texttt{<tests>} -- functional tests
+\end{itemize}
+{\scriptsize \url{http://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax}}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Heart of each Galaxy tool is an XML file}
+Example:
+\vspace{3mm}
+{\scriptsize
+\begin{lstlisting}[language=xml]
+<tool id="my_tool" name="My Tool" version="0.0.1">
+  <command>my_tool "$input1" "$output1"</command>
+  <description>Run My Tool (patent pending)</description>
+  <inputs>
+    <param name="input1" type="data" format="fasta"
+           label="Sequence in" help="FASTA format." />
+  </inputs>
+  <outputs>
+    <data name="output1" format="fasta"
+          label="My Tool Results" />
+  </outputs>
+  <help>
+    This is a Galaxy wrapper for My Tool.
+  </help>
+</tool>
+\end{lstlisting}
+} %end size
+\vspace{-3mm}
+{\scriptsize \url{http://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax}}
+\end{frame}
+
+\begin{frame}
+\frametitle{The \texttt{<inputs>} and \texttt{<param ...>} tags}
+\begin{itemize}
+\item \texttt{<inputs>...</inputs>} contains \texttt{<param ...>} tag(s)
+\item Each \texttt{<param ...>} tag requires a unique \texttt{name}
+    \begin{itemize}
+    \item This is used in the \texttt{<command>} and \texttt{<tests>}
+    \end{itemize}
+\item Each \texttt{<param ...>} tag requires a \texttt{type}
+    \begin{itemize}
+    \item e.g. for \texttt{type="data"} for an input file
+    \end{itemize}
+\item Each \texttt{<param ...>} tag should have a \texttt{label} and \texttt{help}
+    \begin{itemize}
+    \item These are shown in the user interface
+    \end{itemize}
+\item There are additional type-specific attributes
+    \begin{itemize}
+    \item e.g. for \texttt{type="data"} add \texttt{format="..."} for file type
+    \end{itemize}
+\end{itemize}
+{\scriptsize \url{http://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax}}
+\end{frame}
+
+\begin{frame}
+\frametitle{The \texttt{<inputs>} and \texttt{<param ...>} tags}
+Use \texttt{<param type="???" ...>} to control each parameter:
+\begin{itemize}
+\item \texttt{type="data"} -- input file (from current history)
+%   \begin{itemize}
+%   \item Additional \texttt{ftype="...."} attribute sets file types(s)
+%   \end{itemize}
+\item \texttt{type="text"} -- any string via a text box
+\item \texttt{type="integer"} -- whole number via a text box
+\item \texttt{type="float"} -- arbitrary number via a text box
+\item \texttt{type="select"} -- Drop down lists, or radio buttons
+%   \begin{itemize}
+%   \item Contains \texttt{<option ...>} tags
+%   \end{itemize}
+\item \texttt{type="boolean"} -- True/false value with checkbox
+\item \texttt{type="data\_column"} -- Pick column(s) from a tabular file
+\item ...
+%Am I missing any?
+\end{itemize}
+{\scriptsize \url{http://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax}}
+\end{frame}
+
+\begin{frame}
+\frametitle{The \texttt{<outputs>} and \texttt{<data ...>} tags}
+\begin{itemize}
+\item \texttt{<outputs>...</outputs>} contains \texttt{<data ...>} tag(s)
+\item Each \texttt{<data ...>} tag requires a unique \texttt{name}
+    \begin{itemize}
+    \item This is used in the \texttt{<command>} and \texttt{<tests>}
+    \end{itemize}
+\item Each \texttt{<data ...>} tag should have an \texttt{ftype}
+    \begin{itemize}
+    \item e.g. for \texttt{ftype="fasta"} for a FASTA output file
+    \end{itemize}
+\item Each \texttt{<data ...>} tag should have a \texttt{label}
+    \begin{itemize}
+    \item This is the default dataset description in the history
+    \end{itemize}
+\end{itemize}
+{\scriptsize \url{http://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax}}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{<command>} tag -- basics}
+\begin{itemize}
+\item The \texttt{<command>} tag is a command line string template
+\item Named every input \texttt{<param ...>} and output \texttt{<data ...>}
+\item Use \texttt{\$name} to refer to that input parameter or output file
+    \begin{itemize}
+    \item Ideally use \texttt{"\$name"} in case of spaces in filename
+    \end{itemize}    
+\item Can split \texttt{<command>} over multiple lines
+\item XML so need \texttt{\&amp;}, \texttt{\&lt;} and \texttt{\&gt;}
+\item Must escape \texttt{\$} to get an actual dollar sign, e.g.
+\end{itemize}
+\vspace{3mm}
+\begin{lstlisting}[language=xml]
+<command>
+my_tool --threads \$GALAXY_SLOTS
+"$input1" "$output1"
+</command>
+\end{lstlisting}
+\vspace{-3mm}
+{\scriptsize \url{http://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax}}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{<command>} tag -- advanced}
+\begin{itemize}
+\item The \texttt{<command>} tag uses the Cheetah template language
+\item This can include for loops and if statements, e.g.
+\end{itemize}
+\vspace{3mm}
+\begin{lstlisting}[language=xml]
+<command>
+my_tool --threads \$GALAXY_SLOTS
+## double hash for comment lines
+## single hash for Cheetah syntax
+#if $output_choice=="long"
+--long
+#end if
+"$input1" "$output1"
+</command>
+\end{lstlisting}
+\vspace{-3mm}
+%TODO - show Cheetah documentation link here
+{\scriptsize \url{http://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax}}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Advanced parameter options}
+\begin{itemize}
+\item Galaxy supports conditional and repeated constructs
+    \begin{itemize}
+    \item Defined with more XML in the \texttt{<inputs>} section
+    \end{itemize}
+\item Galaxy supports multiple input files as one parameter
+\item Requires Cheetah syntax in the \texttt{<command>} tag
+\item Easiest to learn by example?
+\end{itemize}
+\vspace{3mm}
+\begin{lstlisting}
+$ cd galaxy-dist
+$ grep "<conditional " tools/*/*.xml
+...
+$ grep "<repeat " tools/*/*.xml
+...
+\end{lstlisting}
+\vspace{-3mm}
+{\scriptsize \url{http://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax}}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{<help>} tag}
+\begin{itemize}
+\item Uses reStructuredText markup language
+\item Blank line for a paragraph break
+\item Use asterisks for \texttt{*italics*}, double-asterisks for \texttt{**bold**}
+\item Can include tables, images, links, etc.
+%\item Inside XML so need \texttt{\&amp;}, \texttt{\&lt;} and \texttt{\&gt;}
+\end{itemize}
+\vspace{3mm}
+{\scriptsize
+\begin{lstlisting}[language=xml]
+<tool id="my_tool" name="My Tool" version="0.0.1">
+  ...
+  <help>
+    This is a Galaxy wrapper for *My Tool*.
+    
+    If you use this tool, **please cite this paper**:
+    ...
+  </help>
+</tool>
+\end{lstlisting}
+} %end size
+\vspace{-3mm}
+%TODO - show RST documentation link here
+{\scriptsize \url{http://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax}}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{<stdio>} tag}
+\begin{itemize}
+\item The \texttt{<stdio>} tag controls error detection
+\item Galaxy default is any output on \textbf{stderr} means an error (!)
+\item Unix/Linux convention allows logging etc on \textbf{stderr}
+\item Unix/Linux convention is non-zero return code means error
+\end{itemize}
+For Unix style tools, only check the return code:
+\vspace{3mm}
+{\scriptsize
+\begin{lstlisting}[language=xml]
+<tool id="my_tool" name="My Tool" version="0.0.1">
+  ...
+  <stdio>
+    <!-- Anything other than zero is an error -->
+    <exit_code range="1:" />
+    <exit_code range=":-1" />
+  </stdio>
+  ...
+</tool>
+\end{lstlisting}
+} %end size
+\vspace{-5mm}
+{\scriptsize \url{http://wiki.galaxyproject.org/Admin/Tools/ToolConfigSyntax}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Further reading}
+\begin{itemize}
+\item Functional Tests
+\item Dynamics captions on output files
+\item Variable numbers of output files
+\item Composite datatypes
+\item Defining new Galaxy datatypes
+\item Dependencies \& The Tool Shed
+\item Galaxy macros to reduce repetitive XML
+\end{itemize}
+\end{frame}
+
+\end{document}
