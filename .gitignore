@@ -1,0 +1,30 @@
+#Ignore backup files from some Unix editors,
+*~
+*.swp
+*.bak
+
+#Ignore patches and any original files created by patch command
+*.diff
+*.patch
+*.orig
+*.rej
+
+#Ignore these hidden files from Mac OS X
+.DS_Store
+
+#Ignore compressed files
+*.zip
+*.tar.gz
+
+#Ignore LaTeX temp files
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.nav
+*.snm
+
+#Ignore compiled output
+galaxy_tools.pdf
