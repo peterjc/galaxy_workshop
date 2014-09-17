@@ -1,0 +1,3 @@
+# Configuration file for https://www.sharelatex.com/github/
+compiler: pdflatex
+root_file: galaxy_tools.tex
