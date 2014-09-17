@@ -35,7 +35,4 @@ License <http://creativecommons.org/licenses/by-sa/4.0/>`_ (CC-BY-SA 4.0).
 .. image:: http://i.creativecommons.org/l/by-sa/4.0/88x31.png
 
 Note that this license does not cover the James Hutton Institute logos or
-slide theme (see file ``hutton.tex``).
-
-Note this documentation links to and uses external and separately licenced
-`sample data <SAMPLE_DATA.rst>`_ files.
+slide theme (see file ``hutton.tex`` and ``images/hutton*``).
